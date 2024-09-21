@@ -66,11 +66,11 @@ void handelInput() {
     mousePosition = sf::Mouse::getPosition();
     float moveDistance = player.walkSpeed*dt.asSeconds();
 
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+    /*if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
     {
-        // left key is pressed: move our character
-        player.move(0.f, 0.f,.001f);//add delta time
-    }
+				deltaClock.restart();
+        //player.move(0.f, 0.f,.001f);//add delta time
+    }*/
    
     sf::Vector3f deltaPos(0.f,0.f,0.f);
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))deltaPos.z+= moveDistance;
@@ -142,6 +142,12 @@ int main()
 					));
 
 				handelInput();
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+				{
+					clock.restart();
+					//player.move(0.f, 0.f,.001f);//add delta time
+				}
+
         window.clear();
         window.draw(shape, &shader);
         window.display();

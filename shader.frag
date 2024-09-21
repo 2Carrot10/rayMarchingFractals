@@ -19,7 +19,8 @@ struct ls {
 
 float march(vec3 orig) {
 	vec3 a = vec3(0.0,0.0,0.0);
-	float loopDist = 20.0;
+	float firstLoopDist = 2.0;
+	float loopDist = firstLoopDist * time;// * length(orig);
 
 	// space warping
 	vec3 newPos2 = mod(orig, loopDist) - vec3(loopDist / 2.0);
