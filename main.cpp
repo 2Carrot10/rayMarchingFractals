@@ -8,8 +8,6 @@
 
 #include <iostream>
 
-
-
 sf::Vector2i mousePosition;
 sf::Vector2i size(1920,1080);
 sf::RenderWindow window(sf::VideoMode(size.x, size.y), "SFML Shader Example");
@@ -41,10 +39,7 @@ public:
         eulerAngle[2] += z;
     }
 };
-
 Player player;
-
-
 
 class Sphere {
 	sf::Vector3f position;
@@ -62,7 +57,6 @@ std::list<Sphere> spheres = {
 
 
 sf::Clock deltaClock;
-
 
 sf::Time dt;
 
@@ -141,8 +135,8 @@ int main()
 
         shader.setUniform("u_resolution", sf::Vector2f(window.getSize()));
         shader.setUniform("orig", player.getHeadTransform());
-        //shader.setUniform("time", clock.getElapsedTime().asSeconds());
-				shader.setUniform("eRot", sf::Vector3f(player.getEulerAngle()[0],
+        shader.setUniform("time", clock.getElapsedTime().asSeconds());
+				shader.setUniform("playerRotation", sf::Vector3f(player.getEulerAngle()[0],
 					player.getEulerAngle()[1],
 					player.getEulerAngle()[2]
 					));
