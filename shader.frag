@@ -6,6 +6,7 @@ uniform vec3 playerRotation;
 uniform vec3 orig;
 uniform float time;
 
+
 float nearDist = 0.0;
 float farDist = 300.0;
 
