@@ -156,7 +156,7 @@ vec3 cast_ray(vec3 orig, vec3 dir, vec3 origdir) {
   // if(lowestStep < .2) col = vec3(1,col.g,col.b);
 	// return col;
 
-	float r = ((farDist*2.0/3.0) - totalMove) / ((farDist /2.0));
+	float r = ((farDist*2.0/3.0) - totalMove) / ((farDist));
 	float g = (160.0 - min(totalMove,160.0)) / 160.0;//((farDist/30.0) - totalMove) / ((farDist / 3.0));
 	float b = (farDist - totalMove) / ((farDist * 1.0));
   g=g*g;
