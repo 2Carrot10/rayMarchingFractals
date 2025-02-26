@@ -11,6 +11,18 @@ float nearDist = 0.0;
 float farDist = 300.0;
 
 
+vec3 nearColor = vec3(0.733,0.604,0.969);
+float farColorDist = 30.0;
+vec3 farColor = vec3(0.62,0.808,0.416);
+
+float fartherColorDist = 80.0;
+vec3 fartherColor = vec3(0.478,0.635,0.969);
+
+float backColorDist = 300.0;
+vec3 backColor = vec3(0.102,0.106,0.149);
+
+
+// Light
 struct ls {
 	vec3 pos;
 	vec3 color;
@@ -35,15 +47,32 @@ float wholes(vec3 orig) {
 
 float cubes(vec3 orig) {
 	vec3 a = vec3(0.0,0.0,0.0);
-	float firstLoopDist = 20.0;
-	float loopDist = time * 2.0;
+	float loopDist = 6.0;
 
 	// space warping
-	vec3 newPos2 = mod(orig, loopDist) - vec3(loopDist / 2.0);
+	vec3 newPos = mod(orig, loopDist) - vec3(loopDist / 2.0);
+  orig -= vec3(loopDist / 2.0);
+  if(orig.x <= loopDist/2.0) newPos.x = orig.x;
+  /*
+  while(abs(newPos.x)>loopDist/2.0){ 
+    newPos.x -= loopDist * sign(newPos.x);
+  }
+  while(abs(newPos.y)>loopDist/2.0) {
+    newPos.y -= loopDist * sign(newPos.y);
+  }
+  while(abs(newPos.z)>loopDist/2.0) {
+    newPos.z -= loopDist * sign(newPos.z);
+  }
+
+  while(length(newPos)>loopDist/2.0) {
+    newPos -= loopDist*newPos/length(newPos);
+  }
+
+  */
 
 	//vec3 newPos2 = newPos / dot(orig, vec3(0.0,1.0,0.0));
 
-	vec3 inter = abs(newPos2 - a);
+	vec3 inter = abs(newPos - a);
 	float dist = max(inter.x, max(inter.y, inter.z));//(inter.x) * ((inter.y)*( inter.z));
 	return dist - 1.0;//9.0 - dist;
 }
@@ -53,7 +82,7 @@ float hollowCubes(vec3 orig) {
 	float firstLoopDist = 20.0;
 	float loopDist = time * 2.0;
 
-	// space warping
+	// Space warping
 	vec3 newPos2 = mod(orig, loopDist) - vec3(loopDist / 2.0);
 
 	//vec3 newPos2 = newPos / dot(orig, vec3(0.0,1.0,0.0));
@@ -81,72 +110,47 @@ float fractalMaybe(vec3 orig) {
 	return dist - 1.0;//9.0 - dist;
 }
 
-
-float circlesOfCircles(vec3 orig) {
-	vec3 a = vec3(0.0,0.0,0.0);
-	float firstLoopDist = 20.0;
-	float loopDist = 2.0;
-
-	// space warping
-	vec3 newPos2 = mod(orig, loopDist) - vec3(loopDist / 2.0);
-
-	//vec3 newPos2 = newPos / dot(orig, vec3(0.0,1.0,0.0));
-
-	vec3 inter = abs(newPos2 - a);
-	float dist = length(inter);//(inter.x) * ((inter.y)*( inter.z));
-	//return dist - pow(length(orig),time/3.0)/50000.0;//9.0 - dist;
-	return dist - pow(length(orig),6.0)/50000.0;//9.0 - dist;
-}
-
-vec3 cast_ray_circle(vec3 orig, vec3 dir) {
-	float closeSoFar = 1000.0;
-
-	float totalMove = 0.0;
-	for(int j = 0; j < 60; j++){
-		float step = circlesOfCircles(orig);
-		totalMove += step;
-		orig += dir * step;
-	}
-
-	float r = (12.0 - totalMove) / ((12.0));
-	float g = (6.0 - totalMove) / 6.0;//((farDist/30.0) - totalMove) / ((farDist / 3.0));
-	float b = (6.0 - totalMove) / 6.0;//((farDist*2.0/3.0) - totalMove) / ((farDist /3.0));
-	// Most are 300, some at the very ends are 0
-
-	return vec3(r, g, b);
-}
-
-float crazyMarch(vec3 orig) {
-	vec3 a = vec3(0.0,0.0,0.0);
-	float firstLoopDist = 20.0;
-	float loopDist = 10.0;
-
-	// space warping
-	vec3 newPos2 = mod(orig, loopDist) - vec3(loopDist / 2.0);
-
-	//vec3 newPos2 = newPos / dot(orig, vec3(0.0,1.0,0.0));
-
-	vec3 inter = abs(newPos2 - a);
-	float dist = (inter.x) * ((inter.y)*( inter.z));
-	return dist - 1.0;
-}
-
 vec3 cast_ray(vec3 orig, vec3 dir) {
 	float closeSoFar = 1000.0;
 
+  // Move
 	float totalMove = 0.0;
-	for(int j = 0; j < 60; j++){
+	float lowestStep = 100000.0;
+	for(int j = 0; j < 100; j++){
 		float step = cubes(orig);
+    lowestStep = min(lowestStep, step);
 		totalMove += step;
 		orig += dir * step;
 	}
 
-	float r = (farDist - totalMove) / ((farDist / 3.0));
-	float g = (160.0 - totalMove) / 160.0;//((farDist/30.0) - totalMove) / ((farDist / 3.0));
-	float b = (6.0 - totalMove) / 6.0;//((farDist*2.0/3.0) - totalMove) / ((farDist /3.0));
+  // Set color
+	vec3 col = vec3(0);
+
+  col = vec3(sin(totalMove), sin(totalMove/2.0), sin(totalMove/4.0));
+  // return col;
+	if(totalMove < farColorDist) {
+		float a = (totalMove/farColorDist);
+		col = farColor * a + nearColor * (1.0-a);
+		col = nearColor * (1.0-a) + farColor * a;
+	}
+	else if (totalMove < fartherColorDist) {
+		//float a = //((totalMove - farColorDist)/(fartherColorDist-farColorDist));
+		// col = fartherColor * a + farColor * (1.0-a);
+	} else {
+		col = backColor;
+	}
+	
+  // if(lowestStep < .2) col = vec3(1,col.g,col.b);
+	// return col;
+
+	float r = ((farDist*2.0/3.0) - totalMove) / ((farDist /2.0));
+	float g = (160.0 - min(totalMove,160.0)) / 160.0;//((farDist/30.0) - totalMove) / ((farDist / 3.0));
+	float b = (farDist - totalMove) / ((farDist * 1.0));
+  g=g*g;
+  float c = 0.0;//sin(totalMove)*.1;
 	// Most are 300, some at the very ends are 0
 
-	return vec3(r, g, b);
+	return vec3(r+c, g+c, b+c);
 }
 
 
@@ -156,8 +160,10 @@ void main()
 	//lights[0].color = vec3(.1, 0.1, 1.);
 	//lights[0].power = 1.0;
 
-	float x = (gl_FragCoord.x / (u_resolution.y  + 1.0)) - 0.5; 
-	float y = (gl_FragCoord.y / (u_resolution.y  + 1.0)) - 0.5;
+	float x = (gl_FragCoord.x / (u_resolution.y)) - 0.5 * u_resolution.x / u_resolution.y; 
+	float y = (gl_FragCoord.y / (u_resolution.y)) - 0.5;
+  x=x/((time/50.0)+1.0);
+  y=y/((time/50.0)+1.0);
 	//float y = (gl_FragCoord.y / (u_resolution.y  + 1.0)) - 0.5;
 
 	vec3 dir3 = normalize(vec3(x, y, 1.0));
