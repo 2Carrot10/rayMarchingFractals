@@ -124,7 +124,7 @@ text.setFont(font);
 
     sf::Clock clock;
     float time = 1.0;
-    float distort = 1.0;
+    float distort = .0;
 
     window.setFramerateLimit(40);
     window.setMouseCursorVisible(false);
@@ -157,11 +157,15 @@ text.setFont(font);
         }
 
 
-				if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::J))
 				{
           distort += dt.asSeconds();
 					//player.move(0.f, 0.f,.001f);//add delta time
-				} else { 
+          //
+				}
+
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::I))
+        { 
 
           distort -= dt.asSeconds();
         }

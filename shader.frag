@@ -118,8 +118,8 @@ vec3 cast_ray(vec3 orig, vec3 dir, vec3 origdir) {
 	float totalMove = 0.0;
 	float lowestStep = 100000.0;
 	for(int j = 0; j < 100; j++){
-    dir = normalize(dir-(origdir*(distort*.1)));
 		float step = cubes(orig);
+    dir = normalize(dir-(origdir*(distort*.1*step)));
     lowestStep = min(lowestStep, step);
     int count = 0;
     orig += step * dir;
@@ -156,10 +156,10 @@ vec3 cast_ray(vec3 orig, vec3 dir, vec3 origdir) {
   // if(lowestStep < .2) col = vec3(1,col.g,col.b);
 	// return col;
 
-	float r = ((farDist*2.0/3.0) - totalMove) / ((farDist));
+	float r = ((farDist*2.0/3.0) - totalMove) / ((farDist / 1.9));
 	float g = (160.0 - min(totalMove,160.0)) / 160.0;//((farDist/30.0) - totalMove) / ((farDist / 3.0));
 	float b = (farDist - totalMove) / ((farDist * 1.0));
-  g=g*g;
+  g=g*g*g;
   float c = 0.0;//sin(totalMove)*.1;
 	// Most are 300, some at the very ends are 0
 
