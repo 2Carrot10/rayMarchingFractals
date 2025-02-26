@@ -5,6 +5,7 @@ uniform vec2 u_resolution;
 uniform vec3 playerRotation;
 uniform vec3 orig;
 uniform float time;
+uniform float distort;
 
 
 float nearDist = 0.0;
@@ -110,17 +111,29 @@ float fractalMaybe(vec3 orig) {
 	return dist - 1.0;//9.0 - dist;
 }
 
-vec3 cast_ray(vec3 orig, vec3 dir) {
+vec3 cast_ray(vec3 orig, vec3 dir, vec3 origdir) {
 	float closeSoFar = 1000.0;
 
   // Move
 	float totalMove = 0.0;
 	float lowestStep = 100000.0;
 	for(int j = 0; j < 100; j++){
+    dir = normalize(dir-(origdir*(distort*.1)));
 		float step = cubes(orig);
     lowestStep = min(lowestStep, step);
-		totalMove += step;
-		orig += dir * step;
+    int count = 0;
+    orig += step * dir;
+    totalMove += step;
+    /*
+    while(step>.1 || count < 100) {
+      count++;
+      float change = .1;
+      if(step<.1) change = step; 
+      step -=change;
+		totalMove += change;
+		orig += dir * change;
+    }
+    */
 	}
 
   // Set color
@@ -162,13 +175,23 @@ void main()
 
 	float x = (gl_FragCoord.x / (u_resolution.y)) - 0.5 * u_resolution.x / u_resolution.y; 
 	float y = (gl_FragCoord.y / (u_resolution.y)) - 0.5;
-  x=x/((time/50.0)+1.0);
-  y=y/((time/50.0)+1.0);
+  x=x/((time*4.0)+1.0);
+  y=y/((time*4.0)+1.0);
 	//float y = (gl_FragCoord.y / (u_resolution.y  + 1.0)) - 0.5;
 
 	vec3 dir3 = normalize(vec3(x, y, 1.0));
 	vec3 dir = vec3(dir3.x, dir3.y * cos(playerRotation.y) - dir3.z * sin(playerRotation.y), dir3.z * cos(playerRotation.y) + dir3.y * sin(playerRotation.y));
 	vec3 dir2 = vec3(dir.x * cos(playerRotation.x) - dir.z * sin(playerRotation.x), dir.y, dir.z * cos(playerRotation.x) + dir.x * sin(playerRotation.x));
 
-	gl_FragColor = vec4(max(cast_ray(orig, dir2),vec3(0.0)),1.0);
+
+
+	vec3 adir3 = normalize(vec3(0.0, 0.0, 1.0));
+	vec3 adir = vec3(adir3.x, adir3.y * cos(playerRotation.y) - adir3.z * sin(playerRotation.y), adir3.z * cos(playerRotation.y) + adir3.y * sin(playerRotation.y));
+	vec3 adir2 = vec3(adir.x * cos(playerRotation.x) - adir.z * sin(playerRotation.x), adir.y, adir.z * cos(playerRotation.x) + adir.x * sin(playerRotation.x));
+
+
+  float xForward = u_resolution.x/2.0;
+  float yForward = u_resolution.y/2.0;
+
+	gl_FragColor = vec4(max(cast_ray(orig, dir2, adir2),vec3(0.0)),1.0);
 }

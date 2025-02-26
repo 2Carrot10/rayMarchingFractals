@@ -64,7 +64,9 @@ void handelInput() {
     sf::Vector2i deltaMousePosition = sf::Mouse::getPosition() - mousePosition;
     sf::Mouse::setPosition(sf::Vector2i(window.getSize().x / 2, window.getSize().y / 2));
     mousePosition = sf::Mouse::getPosition();
+
     float moveDistance = player.walkSpeed*dt.asSeconds();
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) moveDistance *=20.0;
 
     /*if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
     {
@@ -96,9 +98,18 @@ void handelInput() {
     player.move(worldReletiveDeltaPos);
 }
 
-
+sf::Font font;
 int main()
 {
+
+
+if (!font.loadFromFile("Inconsolata-Bold.ttf"))
+{
+  std::cout << "Error loading font";
+}
+
+sf::Text text;
+text.setFont(font);
 
     mousePosition = sf::Mouse::getPosition();
     sf::Shader shader;
@@ -113,6 +124,7 @@ int main()
 
     sf::Clock clock;
     float time = 1.0;
+    float distort = 1.0;
 
     window.setFramerateLimit(40);
     window.setMouseCursorVisible(false);
@@ -138,17 +150,29 @@ int main()
 
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 				{
-          time += clock.getElapsedTime().asSeconds();
+          time += dt.asSeconds();
+				} else { 
+
+          time -= dt.asSeconds();
+        }
+
+
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
+				{
+          distort += dt.asSeconds();
 					//player.move(0.f, 0.f,.001f);//add delta time
 				} else { 
 
-          time -= clock.getElapsedTime().asSeconds();
+          distort -= dt.asSeconds();
         }
+
         if(time<0.0) time= 0.0;
+        if(distort<0.0) distort= 0.0;
         
         shader.setUniform("u_resolution", sf::Vector2f(window.getSize()));
         shader.setUniform("orig", player.getHeadTransform());
         shader.setUniform("time", time);
+        shader.setUniform("distort", distort);
         // std::cout << (clock.getElapsedTime().asSeconds());
 				shader.setUniform("playerRotation", sf::Vector3f(player.getEulerAngle()[0],
 					player.getEulerAngle()[1],
@@ -157,8 +181,10 @@ int main()
 
 				handelInput();
 
+        text.setString(std::to_string((1.0/dt.asSeconds())).substr(0,4));
         window.clear();
         window.draw(shape, &shader);
+        window.draw(text);
         window.display();
     }
 }
