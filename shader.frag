@@ -23,6 +23,36 @@ float backColorDist = 300.0;
 vec3 backColor = vec3(0.102,0.106,0.149);
 
 
+int Iterations = 8;
+float Power = 3.0;
+float Bailout = 2.0;
+
+float DE(vec3 pos) {
+	vec3 z = pos;
+	float dr = 1.0;
+	float r = 0.0;
+	for (int i = 0; i < Iterations ; i++) {
+		r = length(z);
+		if (r>Bailout) break;
+		
+		// convert to polar coordinates
+		float theta = acos(z.z/r);
+		float phi = atan(z.y,z.x);
+		dr =  pow( r, Power-1.0)*Power*dr + 1.0;
+		
+		// scale and rotate the point
+		float zr = pow( r,Power);
+		theta = theta*Power;
+		phi = phi*Power;
+		
+		// convert back to cartesian coordinates
+		z = zr*vec3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+		z+=pos;
+	}
+	return 0.5*log(r)*r/dr;
+}
+
+
 // Light
 struct ls {
 	vec3 pos;
@@ -118,12 +148,26 @@ vec3 cast_ray(vec3 orig, vec3 dir, vec3 origdir) {
 	float totalMove = 0.0;
 	float lowestStep = 100000.0;
 	for(int j = 0; j < 100; j++){
-		float step = cubes(orig);
+		float step = DE(orig);
     dir = normalize(dir-(origdir*(distort*.1*step)));
     lowestStep = min(lowestStep, step);
     int count = 0;
     orig += step * dir;
     totalMove += step;
+
+
+		/*
+	float totalMoveToLight = 0.0;
+	float lowestStep = 100000.0;
+	for(int j = 0; j < 100; j++){
+		float step = DE(orig);
+    dir = normalize(dir-(origdir*(distort*.1*step)));
+    lowestStep = min(lowestStep, step);
+    int count = 0;
+    orig += step * dir;
+    totalMove += step;
+	*/
+
     /*
     while(step>.1 || count < 100) {
       count++;
@@ -156,6 +200,8 @@ vec3 cast_ray(vec3 orig, vec3 dir, vec3 origdir) {
   // if(lowestStep < .2) col = vec3(1,col.g,col.b);
 	// return col;
 
+	farDist *= 20.0;
+	totalMove *= 20.0;
 	float r = ((farDist*2.0/3.0) - totalMove) / ((farDist / 1.9));
 	float g = (160.0 - min(totalMove,160.0)) / 160.0;//((farDist/30.0) - totalMove) / ((farDist / 3.0));
 	float b = (farDist - totalMove) / ((farDist * 1.0));
@@ -195,3 +241,4 @@ void main()
 
 	gl_FragColor = vec4(max(cast_ray(orig, dir2, adir2),vec3(0.0)),1.0);
 }
+
