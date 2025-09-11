@@ -88,7 +88,9 @@ void handelInput() {
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) window.close();
 
+	/*
     player.rotate(deltaMousePosition.x*player.turnSpeed, -deltaMousePosition.y * player.turnSpeed, 0.0);
+	*/
 
     sf::Vector3f worldReletiveDeltaPos;
    

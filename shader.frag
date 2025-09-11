@@ -23,9 +23,9 @@ float backColorDist = 300.0;
 vec3 backColor = vec3(0.102,0.106,0.149);
 
 
-int Iterations = 8;
-float Power = 3.0;
-float Bailout = 2.0;
+int Iterations = 4;
+float Power = 8.0;
+float Bailout = 10.0;
 
 float DE(vec3 pos) {
 	vec3 z = pos;
@@ -141,32 +141,45 @@ float fractalMaybe(vec3 orig) {
 	return dist - 1.0;//9.0 - dist;
 }
 
+vec3 lightDir = normalize(vec3(0.0,1.0,2.0));
+
 vec3 cast_ray(vec3 orig, vec3 dir, vec3 origdir) {
 	float closeSoFar = 1000.0;
 
   // Move
 	float totalMove = 0.0;
 	float lowestStep = 100000.0;
-	for(int j = 0; j < 100; j++){
+	bool hit;
+	for(int j = 0; j < 60; j++){
 		float step = DE(orig);
+		hit = step<.1;
     dir = normalize(dir-(origdir*(distort*.1*step)));
     lowestStep = min(lowestStep, step);
     int count = 0;
     orig += step * dir;
     totalMove += step;
+	}
 
 
-		/*
 	float totalMoveToLight = 0.0;
-	float lowestStep = 100000.0;
-	for(int j = 0; j < 100; j++){
-		float step = DE(orig);
-    dir = normalize(dir-(origdir*(distort*.1*step)));
-    lowestStep = min(lowestStep, step);
-    int count = 0;
-    orig += step * dir;
-    totalMove += step;
-	*/
+	float lightness = 0.0;
+	float small = .001;
+	if(hit) {
+		float x = DE(orig + vec3(small,0, 0)) - DE(orig + vec3(-small,0, 0)); 
+		float y = DE(orig + vec3(0, small, 0)) - DE(orig + vec3(0, -small, 0));
+		float z = DE(orig + vec3(0, 0, small)) - DE(orig + vec3(0, 0, -small));
+		vec3 n = normalize(vec3(x, y, z));
+		lightness = dot(n, lightDir);
+
+		for(int j = 0; j < 120; j++){
+			float step = DE(orig);
+			lowestStep = min(lowestStep, step);
+			orig += step * lightDir;
+			totalMoveToLight += step;
+		}
+	} else {
+		return vec3(.4,.8,.9);
+	}
 
     /*
     while(step>.1 || count < 100) {
@@ -178,38 +191,24 @@ vec3 cast_ray(vec3 orig, vec3 dir, vec3 origdir) {
 		orig += dir * change;
     }
     */
-	}
 
   // Set color
-	vec3 col = vec3(0);
 
-  col = vec3(sin(totalMove), sin(totalMove/2.0), sin(totalMove/4.0));
-  // return col;
-	if(totalMove < farColorDist) {
-		float a = (totalMove/farColorDist);
-		col = farColor * a + nearColor * (1.0-a);
-		col = nearColor * (1.0-a) + farColor * a;
-	}
-	else if (totalMove < fartherColorDist) {
-		//float a = //((totalMove - farColorDist)/(fartherColorDist-farColorDist));
-		// col = fartherColor * a + farColor * (1.0-a);
-	} else {
-		col = backColor;
-	}
-	
-  // if(lowestStep < .2) col = vec3(1,col.g,col.b);
-	// return col;
-
-	farDist *= 20.0;
+	return vec3((totalMoveToLight > .02) ? sqrt(lightness) * 5.0 + .2 : 0.1);
+	// farDist *= 20.0;
+	/*
 	totalMove *= 20.0;
-	float r = ((farDist*2.0/3.0) - totalMove) / ((farDist / 1.9));
+	totalMoveToLight *= 1000.003;
+	totalMove = totalMoveToLight;
+	float r = ((farDist*2.0/3.0) - totalMoveToLight) / ((farDist / 1.9));
 	float g = (160.0 - min(totalMove,160.0)) / 160.0;//((farDist/30.0) - totalMove) / ((farDist / 3.0));
 	float b = (farDist - totalMove) / ((farDist * 1.0));
   g=g*g*g;
   float c = 0.0;//sin(totalMove)*.1;
+	*/
 	// Most are 300, some at the very ends are 0
 
-	return vec3(r+c, g+c, b+c);
+	// return vec3(r+c, g+c, b+c);
 }
 
 
