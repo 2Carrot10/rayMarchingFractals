@@ -194,7 +194,7 @@ vec3 cast_ray(vec3 orig, vec3 dir, vec3 origdir) {
 
   // Set color
 
-	return vec3((totalMoveToLight > .02) ? sqrt(lightness) * 5.0 + .2 : 0.1);
+	return vec3(sqrt(lightness));
 	// farDist *= 20.0;
 	/*
 	totalMove *= 20.0;
