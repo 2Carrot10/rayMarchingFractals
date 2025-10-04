@@ -30,6 +30,64 @@ struct ls {
 	float power;
 };
 
+int Iterations = 22;
+float Scale = 2.0;
+float Offset = 3.0;
+
+float DE3(vec3 z)
+{
+
+	float loopDist = 6.0;
+	z = mod(z, loopDist) - vec3(loopDist / 2.0);
+	z/=2.0;
+    float r;
+    int n = 0;
+    while (n < Iterations) {
+       if((z.x+z.y)<0.0) z.xy = -z.yx; // fold 1
+       if((z.x+z.z)<0.0) z.xz = -z.zx; // fold 2
+       if((z.y+z.z)<0.0) z.zy = -z.yz; // fold 3	
+       z = z*Scale - Offset*(Scale-1.0);
+       n++;
+    }
+    return (length(z) ) * pow(Scale, -float(n));
+}
+
+float DE2(vec3 z)
+{
+    float r;
+    int n = 0;
+    while (n < Iterations) {
+       if(z.x+z.y<0.0) z.xy = -z.yx; // fold 1
+       if(z.x+z.z<0.0) z.xz = -z.zx; // fold 2
+       if(z.y+z.z<0.0) z.zy = -z.yz; // fold 3	
+       z = z*Scale - Offset*(Scale-1.0);
+       n++;
+    }
+    return (length(z) ) * pow(Scale, -float(n));
+}
+
+float DE(vec3 z)
+{
+
+	vec3 a1 = vec3(1,1,1);
+	vec3 a2 = vec3(-1,-1,1);
+	vec3 a3 = vec3(1,-1,-1);
+	vec3 a4 = vec3(-1,1,-1);
+	vec3 c;
+	int n = 0;
+	float dist, d;
+	while (n < Iterations) {
+		 c = a1; dist = length(z-a1);
+	        d = length(z-a2); if (d < dist) { c = a2; dist=d; }
+		 d = length(z-a3); if (d < dist) { c = a3; dist=d; }
+		 d = length(z-a4); if (d < dist) { c = a4; dist=d; }
+		z = Scale*z-c*(Scale-1.0);
+		n++;
+	}
+
+	return length(z) * pow(Scale, float(-n));
+}
+
 //wholes
 float wholes(vec3 orig) {
 	vec3 a = vec3(0.0,0.0,0.0);
@@ -47,35 +105,16 @@ float wholes(vec3 orig) {
 }
 
 float cubes(vec3 orig) {
-	vec3 a = vec3(0.0,0.0,0.0);
 	float loopDist = 6.0;
 
 	// space warping
 	vec3 newPos = mod(orig, loopDist) - vec3(loopDist / 2.0);
-  orig -= vec3(loopDist / 2.0);
-  if(orig.x <= loopDist/2.0) newPos.x = orig.x;
-  /*
-  while(abs(newPos.x)>loopDist/2.0){ 
-    newPos.x -= loopDist * sign(newPos.x);
-  }
-  while(abs(newPos.y)>loopDist/2.0) {
-    newPos.y -= loopDist * sign(newPos.y);
-  }
-  while(abs(newPos.z)>loopDist/2.0) {
-    newPos.z -= loopDist * sign(newPos.z);
-  }
+	orig -= vec3(loopDist / 2.0);
+	if(orig.x <= loopDist/2.0) newPos.x = orig.x;
 
-  while(length(newPos)>loopDist/2.0) {
-    newPos -= loopDist*newPos/length(newPos);
-  }
-
-  */
-
-	//vec3 newPos2 = newPos / dot(orig, vec3(0.0,1.0,0.0));
-
-	vec3 inter = abs(newPos - a);
+	vec3 inter = abs(newPos);
 	float dist = max(inter.x, max(inter.y, inter.z));//(inter.x) * ((inter.y)*( inter.z));
-	return dist - 1.0;//9.0 - dist;
+	return (dist - 1.0);//9.0 - dist;
 }
 
 float hollowCubes(vec3 orig) {
@@ -118,22 +157,12 @@ vec3 cast_ray(vec3 orig, vec3 dir, vec3 origdir) {
 	float totalMove = 0.0;
 	float lowestStep = 100000.0;
 	for(int j = 0; j < 100; j++){
-		float step = cubes(orig);
+		float step = DE2(orig);
     dir = normalize(dir-(origdir*(distort*.1*step)));
     lowestStep = min(lowestStep, step);
     int count = 0;
     orig += step * dir;
     totalMove += step;
-    /*
-    while(step>.1 || count < 100) {
-      count++;
-      float change = .1;
-      if(step<.1) change = step; 
-      step -=change;
-		totalMove += change;
-		orig += dir * change;
-    }
-    */
 	}
 
   // Set color

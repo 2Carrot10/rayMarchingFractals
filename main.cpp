@@ -88,7 +88,7 @@ void handelInput() {
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) window.close();
 
-    player.rotate(deltaMousePosition.x*player.turnSpeed, -deltaMousePosition.y * player.turnSpeed, 0.0);
+    // player.rotate(deltaMousePosition.x*player.turnSpeed, -deltaMousePosition.y * player.turnSpeed, 0.0);
 
     sf::Vector3f worldReletiveDeltaPos;
    
@@ -126,7 +126,7 @@ text.setFont(font);
     float time = 1.0;
     float distort = .0;
 
-    window.setFramerateLimit(40);
+    window.setFramerateLimit(10);
     window.setMouseCursorVisible(false);
 
     while (window.isOpen())
@@ -183,6 +183,7 @@ text.setFont(font);
 					player.getEulerAngle()[2]
 					));
 
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) shader.loadFromFile("shader.frag", sf::Shader::Fragment);
 				handelInput();
 
         text.setString(std::to_string((1.0/dt.asSeconds())).substr(0,4));
